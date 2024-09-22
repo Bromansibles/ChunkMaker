@@ -1,18 +1,19 @@
-ChunkSplitter
+# ChunkSplitter
 
 ChunkSplitter is a simple console application written in C# that splits files into chunks. The application is easy to use, allowing users to select files for splitting, specify where to save the chunks, and where to store the hash.json file.
-Features
+
+**Features**
 
     Splits files into chunks.
     Allows users to select a destination folder for the chunks.
     Generates a hash.json file that contains checksums for the chunks.
 
-Requirements
+**Requirements**
 
     .NET 8 or higher
     Operating System: Windows, macOS, Linux
 
-Installation
+**Installation**
 
     Download or clone this repository:
 
@@ -21,7 +22,7 @@ Installation
     Open the project in your preferred IDE, such as Rider or Visual Studio.
     Build and run the application.
 
-Usage
+**Usage**
 
     Run the application:
 
