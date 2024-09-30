@@ -1,4 +1,4 @@
-# ChunkSplitter
+# ChunkMaker
 
 ChunkSplitter is a simple console application written in C# that splits files into chunks. The application is easy to use, allowing users to select files for splitting, specify where to save the chunks, and where to store the hash.json file.
 
