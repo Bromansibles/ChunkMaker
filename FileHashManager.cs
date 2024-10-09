@@ -20,6 +20,7 @@ public class FileHashManager
         return fileHashes;
     }
 
+
     public static string GetFileHash(string filePath)
     {
         using (var sha256 = SHA256.Create())

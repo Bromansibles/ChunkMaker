@@ -1,8 +1,8 @@
-﻿namespace ChunkMaker;
-
-public class PakBuilder
+﻿namespace ChunkMaker
+{
+    public class PakBuilder
     {
-        public void CreateChunksFromFolder(string gameFolder, string chunkFolder, int chunkSizeInBytes, string hashFilePath)
+        public List<string> CreateChunksFromFolder(string gameFolder, string chunkFolder, int chunkSizeInBytes, string hashFilePath)
         {
             if (!Directory.Exists(chunkFolder))
             {
@@ -10,24 +10,30 @@ public class PakBuilder
             }
 
             var previousHashes = FileHashManager.LoadHashesFromFile(hashFilePath);
-
             var currentHashes = FileHashManager.CalculateHashesForGameFolder(gameFolder);
 
             var filesToUpdate = GetChangedFiles(previousHashes, currentHashes, gameFolder);
+            var createdPakFiles = new List<string>(); // List to hold created .pak files
 
             foreach (var file in filesToUpdate)
             {
-                CreateChunksFromFile(file, gameFolder, chunkFolder, chunkSizeInBytes);
+                // Collect the .pak files created by CreateChunksFromFile
+                createdPakFiles.AddRange(CreateChunksFromFile(file, gameFolder, chunkFolder, chunkSizeInBytes));
             }
 
+            // Save the current hashes to the hash file
             FileHashManager.SaveHashesToFile(hashFilePath, currentHashes);
+
+            return createdPakFiles; // Return the list of .pak files
         }
+
         private List<string> GetChangedFiles(Dictionary<string, string> previousHashes, Dictionary<string, string> currentHashes, string gameFolder)
         {
             if (previousHashes == null)
             {
                 Console.WriteLine("previousHashes is null");
             }
+
             if (currentHashes == null)
             {
                 Console.WriteLine("currentHashes is null");
@@ -39,17 +45,18 @@ public class PakBuilder
             {
                 if (!previousHashes.ContainsKey(file.Key) || previousHashes[file.Key] != file.Value)
                 {
-                    filesToUpdate.Add(Path.Combine(gameFolder, file.Key)); // Returns the full path to the file
+                    filesToUpdate.Add(Path.Combine(gameFolder, file.Key)); // Add full path to the file
                 }
             }
 
             return filesToUpdate;
         }
-        
-        private void CreateChunksFromFile(string filePath, string gameFolder, string chunkFolder, int chunkSizeInBytes)
+
+        private List<string> CreateChunksFromFile(string filePath, string gameFolder, string chunkFolder, int chunkSizeInBytes)
         {
             byte[] buffer = new byte[chunkSizeInBytes];
             int chunkIndex = 0;
+            var createdChunks = new List<string>(); // List to hold created .pak files
 
             // Create a file path relative to the game folder
             string relativePath = Path.GetRelativePath(gameFolder, filePath);
@@ -61,14 +68,21 @@ public class PakBuilder
                 while ((bytesRead = fileStream.Read(buffer, 0, chunkSizeInBytes)) > 0)
                 {
                     string chunkFilePath = $"{chunkFilePrefix}_part{chunkIndex + 1}.pak";
-                    Console.WriteLine($" Processing file: {relativePath}");
+                    Console.WriteLine($"Processing file: {relativePath}");
+                    
+                    // Write the chunk to a file
                     using (var chunkStream = new FileStream(chunkFilePath, FileMode.Create, FileAccess.Write))
                     {
                         chunkStream.Write(buffer, 0, bytesRead);
                     }
 
+                    // Add the created chunk file path to the list
+                    createdChunks.Add(chunkFilePath);
                     chunkIndex++;
                 }
             }
+
+            return createdChunks; // Return the list of .pak files created for this file
         }
     }
+}
