@@ -2,7 +2,7 @@
 {
     public class PakBuilder
     {
-        public List<string> CreateChunksFromFolder(string gameFolder, string chunkFolder, int chunkSizeInBytes, string hashFilePath)
+        public Dictionary<string, List<string>> CreateChunksFromFolder(string gameFolder, string chunkFolder, int chunkSizeInBytes, string hashFilePath)
         {
             if (!Directory.Exists(chunkFolder))
             {
@@ -13,19 +13,23 @@
             var currentHashes = FileHashManager.CalculateHashesForGameFolder(gameFolder);
 
             var filesToUpdate = GetChangedFiles(previousHashes, currentHashes, gameFolder);
-            var createdPakFiles = new List<string>(); // List to hold created .pak files
+            var pakFilesDictionary = new Dictionary<string, List<string>>(); // Nový slovník, kde budeme ukládat hash souboru a chunkové soubory
 
             foreach (var file in filesToUpdate)
             {
-                // Collect the .pak files created by CreateChunksFromFile
-                createdPakFiles.AddRange(CreateChunksFromFile(file, gameFolder, chunkFolder, chunkSizeInBytes));
+                // Vypočítáme hash původního souboru
+                string originalFileHash = FileHashManager.GetFileHash(file);
+
+                // Vytvoříme chunkové soubory a přidáme je pod příslušný hash do slovníku
+                pakFilesDictionary[originalFileHash] = CreateChunksFromFile(file, gameFolder, chunkFolder, chunkSizeInBytes);
             }
 
-            // Save the current hashes to the hash file
+            // Uložíme aktuální hashe do hash souboru
             FileHashManager.SaveHashesToFile(hashFilePath, currentHashes);
 
-            return createdPakFiles; // Return the list of .pak files
+            return pakFilesDictionary; // Vrátíme slovník, který obsahuje hash původního souboru a jeho chunkové soubory
         }
+
 
         private List<string> GetChangedFiles(Dictionary<string, string> previousHashes, Dictionary<string, string> currentHashes, string gameFolder)
         {
