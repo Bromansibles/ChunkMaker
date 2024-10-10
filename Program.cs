@@ -1,4 +1,7 @@
 ﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace ChunkMaker
 {
@@ -70,21 +73,15 @@ namespace ChunkMaker
         // Funkce pro uložení seznamu .pak souborů do JSON
         static void SavePakFileListToJson(Dictionary<string, List<string>> pakFiles, string pakFileListPath)
         {
-            var pakFileDictionary = new Dictionary<string, Dictionary<string, string>>();
+            var pakFileDictionary = new Dictionary<string, string>();
 
             foreach (var originalFileHash in pakFiles.Keys)
             {
-                // Vytvoříme nový vnořený slovník, kde název chunku je klíčem a jeho hash je hodnotou
-                var chunkFiles = new Dictionary<string, string>();
-
                 foreach (var pakFile in pakFiles[originalFileHash])
                 {
-                    string chunkHash = FileHashManager.GetFileHash(pakFile); // Vypočítáme hash chunkového souboru
                     string fileName = Path.GetFileName(pakFile); // Získáme název chunkového souboru
-                    chunkFiles[fileName] = chunkHash;
+                    pakFileDictionary[fileName] = originalFileHash; // Hash původního souboru jako hodnota
                 }
-
-                pakFileDictionary[originalFileHash] = chunkFiles;
             }
 
             // Serializace do JSON a zápis do souboru
